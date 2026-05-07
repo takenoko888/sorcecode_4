@@ -9,52 +9,52 @@
   - x2: module_temp_c [degC]
 
 ## 2. このCSVをどう作ったか
-このCSVは、既存の data/solar_dataset.csv から必要3列だけを抽出して作成した。
+このCSVは、FMI（Finnish Meteorological Institute）が公開している太陽光発電実測データ `FMI_Helsinki_PV.csv` から、必要な3列だけを同じ形式に整形して作成した。
 
 実行コマンド（PowerShell）:
 
 ```powershell
-Import-Csv "data/solar_dataset.csv" |
-  Select-Object power_w, irradiance_wm2, module_temp_c |
-  Export-Csv "data/solar_dataset_3vars.csv" -NoTypeInformation -Encoding UTF8
+python build_fmi_solar_dataset.py
 ```
+
+このスクリプトは `data/solar_dataset.csv`（詳細列あり）と `data/solar_dataset_3vars.csv`（3列のみ）を生成する。
 
 ## 3. 列の意味（3列のみ）
 1. power_w
 - 意味: 発電電力 [W]
-- 由来: 生成元スクリプトの仕様では「実測があれば実測、なければ proxy」を採用。
+- 由来: FMIデータの `pv_inv_out`
+- 内容: インバータから系統へ出力された実測AC電力
 
 2. irradiance_wm2
 - 意味: 日射強度 [W/m^2]
-- 由来: Open-Meteo の global_tilted_irradiance（あれば優先）または shortwave_radiation を使用。
+- 由来: FMIデータの `GLOBA_PT1M_AVG(:31)`
+- 内容: PVモジュール面に入射する実測日射量（plane-of-array irradiance）
 
 3. module_temp_c
 - 意味: モジュール温度 [degC]
-- 由来: 周囲温度と日射から推定。
-
-推定に使われる代表式（生成元スクリプト仕様）:
-- module_temp = ambient + ((NOCT - 20) / 800) * irradiance
-- temp_factor = max(0, 1 + temp_coeff_per_c * (module_temp - 25))
-- power_proxy = panel_area * panel_efficiency * irradiance * temp_factor
+- 由来: FMIデータの `TTECH_PT1M_AVG(:32)` と `TTECH_PT1M_AVG(:33)`
+- 内容: 2点の実測モジュール温度の平均値
 
 ## 4. 元データの由来
-- 直接の元CSV: data/solar_dataset.csv
-- その生成仕様: download_solar_dataset.py
-- 元データ取得元サイト（公式）: https://open-meteo.com/
-- 利用API: Open-Meteo Historical Weather API
-- 実際の取得エンドポイント: https://archive-api.open-meteo.com/v1/archive
+- 直接の元CSV: FMI_Helsinki_PV.csv
+- 元データ取得元: Finnish Meteorological Institute (FMI)
+- データ公開ページ: https://fmi.b2share.csc.fi/records/fyyw1-16e65
+- データセット名: PV production data with ancillary PV and meteorological data including solar radiation measurements from FMI's outdoor solar laboratories
+- ライセンス: Creative Commons Attribution 4.0 International (CC BY 4.0)
+- 生成スクリプト: build_fmi_solar_dataset.py
 
 重要:
-- 現在の data/solar_dataset.csv では power_source が全件 proxy（実測 power_w は未合流）。
-- したがって、この data/solar_dataset_3vars.csv の power_w も実質的には proxy 由来。
+- このCSVの `power_w`, `irradiance_wm2`, `module_temp_c` はすべて公開実測データ由来である。
+- 以前の Open-Meteo 由来 proxy データではなく、FMI Helsinki Kumpula の実測PVデータに差し替えた。
 
 ## 5. 内容検証（作成時確認）
 - source_row_count (data/solar_dataset.csv): 2631
 - 3vars_row_count (data/solar_dataset_3vars.csv): 2631
-- データの日付範囲（何日から何日まで）: 2025-04-01 から 2025-10-31
-- source_timestamp_minmax: 2025-04-01 07:00:00 .. 2025-10-31 16:00:00
-- source_power_source_counts: proxy=2631
+- データの日付範囲（何日から何日まで）: 2016-06-10 から 2016-06-13
+- source_timestamp_minmax: 2016-06-10 10:56:00 .. 2016-06-13 03:35:00
+- source_power_source_counts: measured_pv_inv_out=2631
 - 3vars_headers_exact_required_order: True
+- 欠損値: power_w=0, irradiance_wm2=0, module_temp_c=0
 
 ## 6. 実習レポートにそのまま書ける要約
-本実習では、data/solar_dataset.csv から power_w, irradiance_wm2, module_temp_c の3列のみを抽出した data/solar_dataset_3vars.csv を用いた。データの日付範囲は 2025-04-01 から 2025-10-31 である。説明変数は x1=irradiance_wm2, x2=module_temp_c、目的変数は y=power_w である。各変数定義とデータ生成ロジックは download_solar_dataset.py に基づき、3変数の採用理由は groupwork03_solar_data_guide.md の方針に基づいている。なお本CSVの power_w は全件 proxy 由来であり、実測電力を含める場合は measured-power CSV のマージが必要である。
+本実習では、FMI（Finnish Meteorological Institute）が公開している Helsinki Kumpula の太陽光発電実測データから、power_w, irradiance_wm2, module_temp_c の3列のみを抽出・整形した data/solar_dataset_3vars.csv を用いた。データの日付範囲は 2016-06-10 から 2016-06-13 であり、説明変数は x1=irradiance_wm2, x2=module_temp_c、目的変数は y=power_w である。power_w はインバータ出力の実測AC電力、irradiance_wm2 はPVモジュール面の日射量、module_temp_c は2点の実測モジュール温度の平均値である。
