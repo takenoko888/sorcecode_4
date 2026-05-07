@@ -1,0 +1,39 @@
+---
+2026年度電子情報通信実験Ⅳ-2
+
+実習用サンプルデータの補足説明
+
+2026.5.1
+---
+practice02_01_2026.csv，河川水位の測定データ（t:日時（日本時間），y:水位（m））
+---
+
+新潟県河川防災情報システムより，Webスクレイビングにより以下の地点,期間の水位情報を抽出しまとめたもの。
+
+- データ間の区切りはカンマ
+- 測定地点：長岡市信濃
+-- 観測所名　長岡
+-- 河川名　　信濃川
+-- 管理者名　国土交通省
+- 抽出期間：2025年7月20日00:00～2025年8月1日22:00
+
+
+抽出に利用したサンプルコード
+
+- https://github.com/msiplab/EicEngLabIV/blob/master/example02_03.ipynb
+
+実習用のサンプルコード
+
+- https://github.com/msiplab/EicEngLabIV/blob/master/example02_04.ipynb
+
+
+
+（参考サイト）
+
+新潟県河川防災情報システム
+- http://doboku-bousai.pref.niigata.jp/kasen/index.html
+
+
+---
+
+以上
