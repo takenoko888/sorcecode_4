@@ -11,3 +11,14 @@ data/*.zip
 *.elf
 *.slx.r*
 *.slxc
+
+# Python / Jupyter（実験Ⅳワークスペース用の追記）
+__pycache__/
+*.py[cod]
+*$py.class
+.ipynb_checkpoints/
+venv/
+.venv/
+.env
+.DS_Store
+Thumbs.db
